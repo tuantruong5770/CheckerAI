@@ -127,14 +127,14 @@ if __name__ == "__main__":
         while True:
             if count % 2 == 0:
                 print("AI_1 goes first")
-                victory = main.Run(mode=mode, ai_path_1=ai_path_1, ai_path_2=ai_path_2, time=12000)
+                victory = main.Run(mode=mode, ai_path_1=ai_path_1, ai_path_2=ai_path_2, time=480)
                 if victory == -1:
                     ai_win[2] += 1
                 else:
                     ai_win[victory - 1] += 1
             else:
                 print("AI_2 goes first")
-                victory = main.Run(mode=mode, ai_path_1=ai_path_2, ai_path_2=ai_path_1, time=12000)
+                victory = main.Run(mode=mode, ai_path_1=ai_path_2, ai_path_2=ai_path_1, time=480)
                 if victory == -1:
                     ai_win[2] += 1
                 else:
