@@ -83,7 +83,7 @@ class StudentAI():
         if len(self.node.child_node) == 0:
             for t_move in temp_moves:
                 for eachmove in t_move:
-                    self.node.child_node.append(TreeNode(eachmove, self.opponent[self.node.player], self.node))
+                    self.current_node.child_node.append(TreeNode(eachmove, self.opponent[self.node.player], self.node))
         return move.move
 
     def all_make_move(self, move, player):
