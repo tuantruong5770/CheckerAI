@@ -137,11 +137,12 @@ class StudentAI():
             result = self.simulate_wrapper(node.player)
             bt = time.time() - bt
             self.sim_total += bt
-            self.sim_counter += 1
+            self.sim_counter += num_processes
             #print("self.simulate", bt)
-            node.simulation += 1
-            if result == self.opponent[node.player]:
-                node.win += 1
+            node.simulation += num_processes
+            for res in result:
+                if result == self.opponent[node.player]:
+                    node.win += 1
             #print("simulating", result)
             return result
 
@@ -168,6 +169,7 @@ class StudentAI():
         for p in processes:
             if p.is_alive():
                 p.terminate()
+        return result
 
     def simulate(self, player, board, result):
         win = 0
