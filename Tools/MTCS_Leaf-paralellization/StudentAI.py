@@ -80,10 +80,10 @@ class StudentAI():
         # print("Player", self.color, "make move", move.move, "with a winrate of", move.winrate(), "simulated", move.simulation)
         self.current_node = move
         temp_moves = self.board[0].get_all_possible_moves(self.opponent[self.color])
-        if len(self.node.child_node) == 0:
+        if len(self.current_node.child_node) == 0:
             for t_move in temp_moves:
                 for eachmove in t_move:
-                    self.current_node.child_node.append(TreeNode(eachmove, self.opponent[self.node.player], self.node))
+                    self.current_node.child_node.append(TreeNode(eachmove, self.opponent[self.current_node.player], self.current_node))
         return move.move
 
     def all_make_move(self, move, player):
