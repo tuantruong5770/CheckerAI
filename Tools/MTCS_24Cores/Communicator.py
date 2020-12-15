@@ -37,6 +37,3 @@ class Communicator(object):
                 return r,er
             return r
         raise TimeoutError
-
-    def close(self):
-        self.process.kill()

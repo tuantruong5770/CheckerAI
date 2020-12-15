@@ -14,7 +14,7 @@ C = math.sqrt(math.sqrt(2)) # Exploration Parameter
 # NS = 100
 # TS = 15 # time for each mcts
 # minVisit = 15
-num_thread = 5
+num_thread = len(os.sched_getaffinity(0)) - 1
 queue = mp.Queue()
 
 class TreeNode:

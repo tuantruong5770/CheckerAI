@@ -150,12 +150,16 @@ class Board:
                         temp_saved_move[2] = True
                     self.board[target[0]][target[1]].become_king()
                     #self.saved_move[2] = True
+                    if not is_start_checker_king:
+                        break
 
                 elif (turn == 'W' and target[0] == 0):# and not self.board[target[0]][target[1]].is_king):
                     if not is_start_checker_king:
                         temp_saved_move[2] = True
                     self.board[target[0]][target[1]].become_king()
                      #self.saved_move[2] = True
+                    if not is_start_checker_king:
+                        break
                 else:
                     temp_saved_move[2] = False #self.saved_move[2] = False
 
@@ -408,7 +412,6 @@ class Board:
                     self.white_count += 1
                 elif self.board[i][j].color == "B":
                     self.black_count += 1
-
 
 
 
