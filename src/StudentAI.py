@@ -40,8 +40,6 @@ class TreeNode:
     def __repr__(self):
         return "TreeNode: " + str(self.move) + " player: " + str(self.player)
 
-    def expand(self, board): # TODO
-        return
 
 
 class StudentAI():
