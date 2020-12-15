@@ -3,6 +3,7 @@ from BoardClasses import Move
 from BoardClasses import Board
 import math
 import time
+import os
 import copy
 import threading
 import multiprocessing as mp
@@ -10,9 +11,10 @@ import multiprocessing as mp
 #Students can modify anything except the class name and exisiting functions and varibles.
 
 C = math.sqrt(math.sqrt(2)) # Exploration Parameter
-NS = 1000
-minVisit = 20
-num_thread = 5
+# NS = 100
+# TS = 15 # time for each mcts
+# minVisit = 15
+num_thread = len(os.sched_getaffinity(0)) - 1
 queue = mp.Queue()
 
 class TreeNode:
@@ -38,6 +40,8 @@ class TreeNode:
     def __repr__(self):
         return "TreeNode: " + str(self.move) + " player: " + str(self.player)
 
+    def expand(self, board): # TODO
+        return
 
 
 class StudentAI():
@@ -47,15 +51,21 @@ class StudentAI():
         self.row = row
         self.p = p
         self.boards = []
-        for i in range(num_thread):
+        for i in range(num_thread + 1):
             self.boards.append(Board(col, row, p))
             self.boards[i].initialize_game()
         self.color = ''
         self.opponent = {1:2,2:1}
         self.color = 2
-        self.mcts_trees = [TreeNode(None, self.color) for i in range(num_thread)]
+        self.mcts_trees = [TreeNode(None, self.color) for i in range(num_thread + 1)]
         self.sim_total = 0
         self.sim_counter = 0
+        self.TS = 12
+        self.minVisit = 15
+        if col > 7 and row > 7:
+            self.TS = 12
+            self.minVisit = 15
+        print(len(os.sched_getaffinity(0)))
 
     def get_move(self,move):
         """
@@ -70,11 +80,9 @@ class StudentAI():
             #print("Player", self.opponent[self.color], "make move", move)
         else:
             self.color = 1
-            for i in range(num_thread):
+            for i in range(num_thread + 1):
                 self.mcts_trees[i].player = self.color
-        # bt = time.time()
-        self.run_mcts(NS)
-        # print("self.run_mcts:", time.time() - bt)
+        self.run_mcts(self.TS, True)
         #print("avg sim time:", self.sim_total / self.sim_counter)
         move = self.pick_move()
         self.confirm_move(move, self.color)
@@ -133,7 +141,7 @@ class StudentAI():
         for i in range(num_child):
             num_sim = 0
             num_win = 0
-            for j in range(num_thread):
+            for j in range(num_thread + 1):
                 num_sim += self.mcts_trees[j].child_node[i].simulation
                 num_win += self.mcts_trees[j].child_node[i].win
             """
@@ -152,19 +160,33 @@ class StudentAI():
 
 
 
-    def run_mcts(self, number_sim):
+    def run_mcts(self, number_sim, time_sim=False):
         """
         Running mcts with clone trees using multithreading
         :param number_sim: number of simulation
         :return: None
         """
+        bt = time.time()
         processes = []
-
-        for i, tree in enumerate(self.mcts_trees):
-            p = mp.Process(target=self.mcts_wrapper, args=(tree, number_sim, self.boards[i]))
+        for i in range(num_thread):
+            p = mp.Process(target=self.mcts_wrapper, args=(self.mcts_trees[i], number_sim, time_sim, self.boards[i]))
             processes.append(p)
             p.start()
         # print(processes)
+        '''
+        for main process
+        '''
+        if time_sim:
+            count = 0
+            while time.time() - bt < number_sim:
+                count += 1
+                self.mcts(self.mcts_trees[-1], self.boards[-1])
+            print(count)
+        else:
+            for i in range(number_sim):
+                self.mcts(self.mcts_trees[-1], self.boards[-1])
+        print("Time taken main:", time.time() - bt)
+
         i = 0
         while True:
             running = any(p.is_alive() for p in processes)
@@ -178,6 +200,7 @@ class StudentAI():
             p.join()
             # print(p, "JOINED")
         # print("JOINED")
+
         for p in processes:
             if p.is_alive():
                 p.terminate()
@@ -191,7 +214,7 @@ class StudentAI():
         # print(self.mcts_trees[0].child_node[0])
 
 
-    def mcts_wrapper(self, node, number_sim, board):
+    def mcts_wrapper(self, node, number_sim, time_sim, board):
         """
         Wrapper for self.mcts
         :param node: current node
@@ -200,13 +223,20 @@ class StudentAI():
         """
         bt = time.time()
         # print("going in")
-        for i in range(number_sim):
-            self.mcts(node, board)
-        # print("fuck ye")
+        if time_sim:
+            count = 0
+            while time.time()-bt < number_sim:
+                count += 1
+                self.mcts(node,board)
+            print(count)
+        else:
+            for i in range(number_sim):
+                self.mcts(node, board)
+        # print("FUCK ye")
         # for child in node.child_node:
         #     print(child.simulation, end=" | ")
         # print()
-        # print("Time taken:", time.time() - bt)
+        print("Time taken:", time.time() - bt)
         queue.put(node)
         # print("putin")
 
@@ -219,7 +249,7 @@ class StudentAI():
         :param board: current broad
         :return: N/A (result for recursive call)
         """
-        if node.simulation >= minVisit:
+        if node.simulation >= self.minVisit:
             #print("depth:", depth)
             node.simulation += 1
             if not len(node.child_node):
